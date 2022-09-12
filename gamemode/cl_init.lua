@@ -174,19 +174,19 @@ CreateClientConVar( "deathrun_autojump", 1, true, false )
 local bhstop = 0xFFFF - IN_JUMP
 local band = bit.band
 
-function GM:CreateMove( uc )
-	if GetGlobalInt("dr_allow_autojump") != 1 then return end
-	local lp = LocalPlayer()
-	if GetConVarNumber( "deathrun_autojump" ) == 1 and lp:WaterLevel() < 3 and lp:Alive() and lp:GetMoveType() == MOVETYPE_WALK then
-		if not lp:InVehicle() and ( band(uc:GetButtons(), IN_JUMP) ) > 0 then
-			if lp:IsOnGround() then
-				uc:SetButtons( uc:GetButtons() or IN_JUMP )
-			else
-				uc:SetButtons( band(uc:GetButtons(), bhstop) )
-			end
-		end
-	end
-end
+-- function GM:CreateMove( uc )
+-- 	if GetGlobalInt("dr_allow_autojump") != 1 then return end
+-- 	local lp = LocalPlayer()
+-- 	if GetConVarNumber( "deathrun_autojump" ) == 1 and lp:WaterLevel() < 3 and lp:Alive() and lp:GetMoveType() == MOVETYPE_WALK then
+-- 		if not lp:InVehicle() and ( band(uc:GetButtons(), IN_JUMP) ) > 0 then
+-- 			if lp:IsOnGround() then
+-- 				uc:SetButtons( uc:GetButtons() or IN_JUMP )
+-- 			else
+-- 				uc:SetButtons( band(uc:GetButtons(), bhstop) )
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function GM:GetScoreboardNameColor( ply )
 

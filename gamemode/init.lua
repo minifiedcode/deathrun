@@ -28,6 +28,7 @@ local uammo = CreateConVar( "dr_unlimited_ammo", "1", FCVAR_ARCHIVE )
 local pickup = CreateConVar( "dr_allow_death_pickup", "0", FCVAR_ARCHIVE )
 local falldamage = CreateConVar( "dr_realistic_fall_damage", "1", FCVAR_ARCHIVE )
 local push = CreateConVar( "dr_push_collide", "0", FCVAR_ARCHIVE )
+local velocity = CreateConVar( "dr_autojump_velocity_cap", "999999", FCVAR_ARCHIVE )
 
 util.AddNetworkString( "Deathrun_Func" )
 local meta = FindMetaTable( "Player" )
@@ -54,13 +55,14 @@ function GM:PlayerSpawn( ply )
 	ply:StripWeapons()
 	ply:StripAmmo()
 	ply:SetWalkSpeed(260)
-	ply:SetRunSpeed(300)
+	ply:SetRunSpeed(260)
 	ply:AllowFlashlight(true)
 	ply:SetArmor(0)
 	
+	ply:SetGravity(.9)
 	ply:SetupHands()
 
-	ply:SetJumpPower(190)
+	ply:SetJumpPower(200)
 
 	local col = team.GetColor( ply:Team() )
 

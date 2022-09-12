@@ -1,5 +1,7 @@
 DeriveGamemode( "base" )
 
+local lp = LocalPlayer
+
 GM.Name 	= "Deathrun"
 GM.Author 	= "Mr. Gash"
 GM.Email 	= ""
@@ -75,13 +77,40 @@ end
 -- Credit: AzuiSleet
 -- maybe.
 -- It's old, I don't remember who made it. 90% sure it was AzuiSleet.
-function GM:Move(pl, movedata)
-	if pl:IsOnGround() or !pl:Alive() or pl:WaterLevel() > 0 then return end
+local lp, ft, ct, cap = LocalPlayer, FrameTime, CurTime
+local mc, mr, bn, ba, bo, gf = math.Clamp, math.Round, bit.bnot, bit.band, bit.bor, {}
+function GM:Move( ply, data )
+
+	-- fixes jump and duck stop
+	local og = ply:IsFlagSet( FL_ONGROUND )
+	if og and not gf[ ply ] then
+		gf[ ply ] = 0
+	elseif og and gf[ ply ] then
+		gf[ ply ] = gf[ ply ] + 1
+		if gf[ ply ] > 4 then
+			ply:SetDuckSpeed( 0.4 )
+			ply:SetUnDuckSpeed( 0.2 )
+		end
+	end
+
+	if og or not ply:Alive() then return end
 	
-	local aim = movedata:GetMoveAngles()
+	gf[ ply ] = 0
+	ply:SetDuckSpeed(0)
+	ply:SetUnDuckSpeed(0)
+
+	if not IsValid( ply ) then return end
+	if lp and ply ~= lp() then return end
+	
+	if ply:IsOnGround() or not ply:Alive() then return end
+	
+	local aim = data:GetMoveAngles()
 	local forward, right = aim:Forward(), aim:Right()
-	local fmove = movedata:GetForwardSpeed()
-	local smove = movedata:GetSideSpeed()
+	local fmove = data:GetForwardSpeed()
+	local smove = data:GetSideSpeed()
+	
+	if data:KeyDown( IN_MOVERIGHT ) then smove = smove + 500 end
+	if data:KeyDown( IN_MOVELEFT ) then smove = smove - 500 end
 	
 	forward.z, right.z = 0,0
 	forward:Normalize()
@@ -91,31 +120,56 @@ function GM:Move(pl, movedata)
 	wishvel.z = 0
 
 	local wishspeed = wishvel:Length()
-
-	if(wishspeed > movedata:GetMaxSpeed()) then
-		wishvel = wishvel * (movedata:GetMaxSpeed()/wishspeed)
-		wishspeed = movedata:GetMaxSpeed()
+	if wishspeed > data:GetMaxSpeed() then
+		wishvel = wishvel * (data:GetMaxSpeed() / wishspeed)
+		wishspeed = data:GetMaxSpeed()
 	end
 
 	local wishspd = wishspeed
-	wishspd = math.Clamp(wishspd, 0, 30)
+	wishspd = mc( wishspd, 0, 30 )
 
 	local wishdir = wishvel:GetNormal()
-	local current = movedata:GetVelocity():Dot(wishdir)
+	local current = data:GetVelocity():Dot( wishdir )
 
 	local addspeed = wishspd - current
+	if addspeed <= 0 then return end
 
-	if(addspeed <= 0) then return end
-
-	local accelspeed = (120) * wishspeed * FrameTime()
-
-	if(accelspeed > addspeed) then
+	local accelspeed = 1000 * ft() * wishspeed
+	if accelspeed > addspeed then
 		accelspeed = addspeed
 	end
-
-	local vel = movedata:GetVelocity()
+	
+	local vel = data:GetVelocity()
 	vel = vel + (wishdir * accelspeed)
-	movedata:SetVelocity(vel)
 
+	if ply.AutoJumpEnabled == true and GetConVar("dr_allow_autojump"):GetBool() == true and GetConVar("dr_autojump_velocity_cap"):GetFloat() ~= 0 then
+		ply.SpeedCap = GetConVar("dr_autojump_velocity_cap"):GetFloat()
+	else
+		ply.SpeedCap = 99999
+	end
+
+	
+	if ply.SpeedCap and vel:Length2D() > ply.SpeedCap and SERVER then
+		local diff = vel:Length2D() - ply.SpeedCap
+		vel:Sub( Vector( vel.x > 0 and diff or -diff, vel.y > 0 and diff or -diff, 0 ) )
+	end
+	
+	data:SetVelocity( vel )
 	return false
+end
+
+local band = bit.band
+
+function GM:SetupMove( ply, data )
+	if lp and ply ~= lp() then return end
+	if ply.AutoJumpEnabled == false or GetConVar("dr_allow_autojump"):GetBool() == false then return end
+	
+	local ButtonData = data:GetButtons()
+	if band( ButtonData, IN_JUMP ) > 0 then
+		
+		if ply:WaterLevel() < 2 and ply:GetMoveType() ~= MOVETYPE_LADDER and not ply:IsOnGround() then
+			data:SetButtons( band( ButtonData, bit.bnot( IN_JUMP ) ) )
+		end
+	end
+	
 end
