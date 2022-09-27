@@ -162,7 +162,7 @@ local band = bit.band
 
 function GM:SetupMove( ply, data )
 	if lp and ply ~= lp() then return end
-	if ply.AutoJumpEnabled == false or GetConVar("dr_allow_autojump"):GetBool() == false then return end
+	--if ply.AutoJumpEnabled == false or GetConVar("dr_allow_autojump"):GetBool() == false then return end
 	
 	local ButtonData = data:GetButtons()
 	if band( ButtonData, IN_JUMP ) > 0 then

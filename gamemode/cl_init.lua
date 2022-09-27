@@ -59,7 +59,7 @@ function GM:HUDPaint( )
 		keys[ply] = {}
 	end
 
-	local hy = ScrH() - 35
+	local hy = ScrH() - 70
 
 	draw.RoundedBox( 0, hx, hy, hw, hh, Color( 44, 44, 44, 175 ) )
 	draw.RoundedBox( 0, hx + border, hy + border, hw - border*2, hh - border*2, Color( 180, 80, 80, 255 ) )
@@ -121,6 +121,12 @@ function GM:HUDPaint( )
 		end
 	end
 
+	-- Velocity
+	local velocity = math.Round(ply:GetVelocity():LengthSqr() / 1000, 2)
+	local velocityWidth = (hw - border*2) * ( math.Clamp(velocity, 0, 100) / 100)
+	draw.RoundedBox( 0, hx, hy + 35, hw, hh, Color( 44, 44, 44, 175 ) )
+	draw.RoundedBox( 0, hx + border, hy + 35 + border, velocityWidth, hh - border*2, Color( 80, 180, 60, 255) )
+	draw.AAText( velocity, "Deathrun_SmoothBig", hx + 5, hy +35 - 3, Color(255,255,255,255), TEXT_ALIGN_LEFT )
 	self.BaseClass:HUDPaint()
 
 end
